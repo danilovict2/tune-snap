@@ -2,9 +2,9 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
 
+	"github.com/danilovict2/shazam-clone/handlers"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 )
@@ -16,9 +16,7 @@ func main() {
 
 	e := echo.New()
 
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, world!")
-	})
+	e.GET("/", handlers.Home)
 
 	e.Logger.Fatal(e.Start(os.Getenv("LISTEN_ADDR")))
 }
