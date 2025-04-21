@@ -1,0 +1,13 @@
+@keyframes pulse {
+    from {
+        box-shadow: 0 0 0 0 rgba(3,149,229,.4);
+    }
+
+    to {
+        box-shadow: 0 0 0 45px rgba(3,149,229,0);
+    }
+}
+
+.pulse {
+    animation: pulse 1s ease-out .4s infinite;
+}

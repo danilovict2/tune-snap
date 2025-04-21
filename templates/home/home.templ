@@ -1,5 +1,12 @@
 package home
 
+import "github.com/danilovict2/shazam-clone/templates"
+
 templ Hello() {
-    <h1>Hello, world!</h1>
+	@templates.Base() {
+		<h1>Tap to listen</h1>
+		<button class="listen-button" id="listen-button">
+			<h2>Listen</h2>
+		</button>
+	}
 }
