@@ -31,6 +31,9 @@ func main() {
 	}))
 
 	e.GET("/", handlers.Home)
+	
+	api := e.Group("/api")
+	api.POST("/recognize", handlers.Recognize)
 
 	e.Logger.Fatal(e.Start(os.Getenv("LISTEN_ADDR")))
 }
