@@ -1,10 +1,10 @@
 package fingerprint
 
 import (
-	"fmt"
 	"math"
 	"math/cmplx"
 
+	"github.com/danilovict2/shazam-clone/models"
 	"github.com/scientificgo/fft"
 )
 
@@ -15,9 +15,12 @@ const (
 
 var ranges = [...]int{40, 80, 120, 180, 300}
 
-func Fingerprint(audio []byte) {
+func Fingerprint(audio []byte, audioDuration float64) []models.SongPoint {
 	chunks := partition(audio)
-	for _, chunk := range chunks {
+	chunkDuration := audioDuration / float64(len(chunks))
+	songPoints := make([]models.SongPoint, 0)
+
+	for chunkIdx, chunk := range chunks {
 		highscores := make([]float64, len(ranges))
 		points := make([]int64, len(ranges))
 
@@ -31,10 +34,16 @@ func Fingerprint(audio []byte) {
 			}
 		}
 
-		h := hash(points[0], points[1], points[2], points[3])
-		fmt.Println(h)
+		fp := hash(points[0], points[1], points[2], points[3])
+		for i := range 4 {
+			peakTimeInChunk := float64(getFreqRangeIndex(int(points[i]))) * chunkDuration / float64(len(chunk))
+			peakTime := float64(chunkIdx) * chunkDuration + peakTimeInChunk
+
+			songPoints = append(songPoints, models.SongPoint{Fingerprint: fp, TimeMS: peakTime * 1000})
+		}
 	}
-	
+
+	return songPoints
 }
 
 func partition(audio []byte) [][]complex128 {
