@@ -3,7 +3,12 @@ package handlers
 import (
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
+
+type Config struct {
+	MongoClient *mongo.Client
+}
 
 func Render(c echo.Context, code int, t templ.Component) error {
 	buf := templ.GetBuffer()

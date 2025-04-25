@@ -8,12 +8,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func Recognize(c echo.Context) error {
+func (cfg *Config) Recognize(c echo.Context) error {
 	header, err := c.FormFile("sample")
 	if err != nil {
 		return err
 	}
-	
+
 	f, err := header.Open()
 	if err != nil {
 		return err
@@ -26,6 +26,6 @@ func Recognize(c echo.Context) error {
 	}
 
 	fingerprint.Fingerprint(sample)
-	
+
 	return c.String(http.StatusOK, "")
 }

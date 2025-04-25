@@ -34,7 +34,7 @@ func Fingerprint(audio []byte) {
 		h := hash(points[0], points[1], points[2], points[3])
 		fmt.Println(h)
 	}
-
+	
 }
 
 func partition(audio []byte) [][]complex128 {

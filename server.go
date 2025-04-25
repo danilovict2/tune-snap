@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -9,12 +10,28 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
+
+	uri := os.Getenv("MONGODB_CONNECTION_STRING")
+	client, err := mongo.Connect(options.Client().ApplyURI(uri))
+	if err != nil {
+		log.Fatalf("Error connection to database: %v", err)
+	}
+
+	defer func() {
+		if err := client.Disconnect(context.TODO()); err != nil {
+			panic(err)
+		}
+	}()
+
+	config := handlers.Config{MongoClient: client}
 
 	e := echo.New()
 	e.Static("/public", "public")
@@ -33,7 +50,7 @@ func main() {
 	e.GET("/", handlers.Home)
 	
 	api := e.Group("/api")
-	api.POST("/recognize", handlers.Recognize)
+	api.POST("/recognize", config.Recognize)
 
 	e.Logger.Fatal(e.Start(os.Getenv("LISTEN_ADDR")))
 }
