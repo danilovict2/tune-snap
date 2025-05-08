@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -32,7 +31,7 @@ func (cfg *Config) Recognize(c echo.Context) error {
 		return err
 	}
 
-	fmt.Println(fingerprint.Fingerprint(sample, audioDuration))
+	fingerprint.Fingerprint(sample, audioDuration)
 
 	return c.String(http.StatusOK, "")
 }

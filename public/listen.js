@@ -3,6 +3,7 @@ listenButton.addEventListener('click', listen);
 
 const recordingDuration = 3000;
 const channels = 2;
+const audioContext = new AudioContext();
 
 function listen() {
     listenButton.classList.toggle('pulse');
@@ -10,7 +11,6 @@ function listen() {
 
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then((stream) => {
-            const audioContext = new AudioContext();
             const input = audioContext.createMediaStreamSource(stream);
             const recorder = new Recorder(input, { numChannels: channels });
 
@@ -25,8 +25,11 @@ function listen() {
 }
 
 function sendAudio(audio) {
+    const audioDuration = audio.size / (channels * 2 * audioContext.sampleRate);
+
     const formData = new FormData();
     formData.append('sample', audio);
+    formData.append('audio_duration', audioDuration);
 
     fetch('/api/recognize', {
         method: 'POST',

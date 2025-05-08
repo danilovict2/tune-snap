@@ -35,12 +35,8 @@ func Fingerprint(audio []byte, audioDuration float64) []models.SongPoint {
 		}
 
 		fp := hash(points[0], points[1], points[2], points[3])
-		for i := range 4 {
-			peakTimeInChunk := float64(getFreqRangeIndex(int(points[i]))) * chunkDuration / float64(len(chunk))
-			peakTime := float64(chunkIdx) * chunkDuration + peakTimeInChunk
-
-			songPoints = append(songPoints, models.SongPoint{Fingerprint: fp, TimeMS: peakTime * 1000})
-		}
+		chunkTime := float64(chunkIdx) * chunkDuration
+		songPoints = append(songPoints, models.SongPoint{Fingerprint: fp, TimeMS: chunkTime * 1000})
 	}
 
 	return songPoints
