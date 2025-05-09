@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"encoding/base64"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -20,21 +21,27 @@ const (
 )
 
 func (cfg *Config) AddSong(c echo.Context) error {
-	if spotify.DoSomething() == 401 {
-		state, err := rand.StringWithLength(16)
-		if err != nil {
-			return err
+	_, err := spotify.GetTracks(c.FormValue("url"), cfg.SpotifyAccessToken)
+	if err != nil {
+		// Handle 400 Bad Request error by initiating user re-authentication
+		if err.Error() == fmt.Sprintf("%d %s", http.StatusBadRequest, http.StatusText(http.StatusBadRequest)) {
+			state, err := rand.StringWithLength(16)
+			if err != nil {
+				return err
+			}
+
+			query := url.Values{
+				"response_type": {"code"},
+				"client_id":     {os.Getenv("SPOTIFY_CLIENT_ID")},
+				"scope":         {"playlist-read-private playlist-read-collaborative"},
+				"redirect_uri":  {os.Getenv("SPOTIFY_REDIRECT_URI")},
+				"state":         {state},
+			}
+
+			return c.Redirect(http.StatusSeeOther, spotifyUserAuthorizationEndpoint+query.Encode())
 		}
 
-		query := url.Values{
-			"response_type": {"code"},
-			"client_id":     {os.Getenv("SPOTIFY_CLIENT_ID")},
-			"scope":         {"playlist-read-private playlist-read-collaborative"},
-			"redirect_uri":  {os.Getenv("SPOTIFY_REDIRECT_URI")},
-			"state":         {state},
-		}
-
-		return c.Redirect(http.StatusSeeOther, spotifyUserAuthorizationEndpoint+query.Encode())
+		return err
 	}
 
 	return c.String(http.StatusOK, "")
@@ -65,7 +72,7 @@ func (cfg *Config) SpotifyAuth(c echo.Context) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer resp.Body.Close()
 
@@ -74,7 +81,7 @@ func (cfg *Config) SpotifyAuth(c echo.Context) error {
 		return err
 	}
 
-	cfg.SpotifyAccessCode = gjson.Get(string(body), "access_token").Str
+	cfg.SpotifyAccessToken = gjson.Get(string(body), "access_token").Str
 
 	return c.Redirect(http.StatusSeeOther, "/")
 }
