@@ -7,7 +7,8 @@ import (
 )
 
 type Config struct {
-	MongoClient *mongo.Client
+	MongoClient       *mongo.Client
+	SpotifyAccessCode string
 }
 
 func Render(c echo.Context, code int, t templ.Component) error {

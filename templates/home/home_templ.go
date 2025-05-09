@@ -43,7 +43,7 @@ func Hello() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1>Tap to listen</h1><button class=\"listen-button\" id=\"listen-button\"><h2>Listen</h2></button>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1>Tap to listen</h1><button class=\"listen-button\" id=\"listen-button\"><h2>Listen</h2></button><form method=\"POST\" action=\"/api/add_song\" class=\"add-song-form\"><p>Add new songs</p><input type=\"text\" name=\"url\" placeholder=\"https://open.spotify.com/...\"> <button class=\"send-button\" type=\"submit\">Send</button></form>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

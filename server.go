@@ -47,10 +47,14 @@ func main() {
 		CookieSameSite: http.SameSiteStrictMode,
 	}))
 
+
 	e.GET("/", handlers.Home)
 	
 	api := e.Group("/api")
 	api.POST("/recognize", config.Recognize)
+	api.POST("/add_song", config.AddSong)
+	api.GET("/spotify_auth", config.SpotifyAuth)
+
 
 	e.Logger.Fatal(e.Start(os.Getenv("LISTEN_ADDR")))
 }
