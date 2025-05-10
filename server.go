@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -23,6 +24,10 @@ func main() {
 	client, err := mongo.Connect(options.Client().ApplyURI(uri))
 	if err != nil {
 		log.Fatalf("Error connection to database: %v", err)
+	}
+
+	if err := os.Mkdir(os.Getenv("SONGS_DIR"), os.ModePerm); err != nil && !errors.Is(err, os.ErrExist) {
+		log.Fatal(err)
 	}
 
 	defer func() {
