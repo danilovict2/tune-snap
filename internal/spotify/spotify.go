@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	trackEndpoint = "https://api.spotify.com/v1/tracks/"
-	albumEndpoint = "https://api.spotify.com/v1/albums/"
+	trackEndpoint    = "https://api.spotify.com/v1/tracks/"
+	albumEndpoint    = "https://api.spotify.com/v1/albums/"
+	playlistEndpoint = "https://api.spotify.com/v1/playlists/"
 )
 
 func GetTracks(url, token string) ([]Track, error) {
@@ -23,6 +24,8 @@ func GetTracks(url, token string) ([]Track, error) {
 		return extractSingleTrack(url, token)
 	case strings.Contains(url, "album"):
 		return extractAlbumTracks(url, token)
+	case strings.Contains(url, "playlist"):
+		return extractPlaylistTracks(url, token)
 	default:
 		return nil, fmt.Errorf("invalid url: %s", url)
 	}
@@ -59,6 +62,29 @@ func extractAlbumTracks(url, token string) ([]Track, error) {
 
 	tracks := make([]Track, 0)
 	result := gjson.Get(json, "tracks.items")
+	result.ForEach(func(key, value gjson.Result) bool {
+		tracks = append(tracks, trackInfo(value.String()))
+		return true
+	})
+
+	return tracks, nil
+}
+
+func extractPlaylistTracks(url, token string) ([]Track, error) {
+	playlistPattern := `^https:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]{22}$`
+	re := regexp.MustCompile(playlistPattern)
+	if !re.MatchString(url) {
+		return nil, fmt.Errorf("invalid album url: %s", url)
+	}
+
+	id := extractIDFromUrl(url)
+	json, err := apiRequest(playlistEndpoint+id, token)
+	if err != nil {
+		return nil, err
+	}
+
+	tracks := make([]Track, 0)
+	result := gjson.Get(json, "tracks.items.#.track")
 	result.ForEach(func(key, value gjson.Result) bool {
 		tracks = append(tracks, trackInfo(value.String()))
 		return true
