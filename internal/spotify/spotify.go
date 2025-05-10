@@ -125,7 +125,7 @@ func apiRequest(url, token string) (respBody string, err error) {
 }
 
 func trackInfo(json string) Track {
-	track := Track{Name: gjson.Get(json, "name").String()}
+	track := Track{Name: gjson.Get(json, "name").String(), DurationMS: gjson.Get(json, "duration_ms").Int()}
 	artists := gjson.Get(json, "artists.#.name")
 	for _, artist := range artists.Array() {
 		track.Artists = append(track.Artists, artist.String())

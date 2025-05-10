@@ -9,8 +9,8 @@ import (
 )
 
 type searchResult struct {
-	videoID  string
-	durationMS int
+	videoID    string
+	durationMS int64
 }
 
 func DownloadTracks(tracks []spotify.Track) error {
@@ -51,7 +51,7 @@ func search(track spotify.Track) ([]searchResult, error) {
 	for i := range min(len(result.Videos), 10) {
 		video := result.Videos[i]
 		if video != nil {
-			results = append(results, searchResult{videoID: video.ID, durationMS: video.Duration * 1000})
+			results = append(results, searchResult{videoID: video.ID, durationMS: int64(video.Duration * 1000)})
 		}
 	}
 
