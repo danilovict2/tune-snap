@@ -36,35 +36,12 @@ func extractSingleTrack(url, token string) ([]Track, error) {
 	}
 
 	id := extractIDFromUrl(url)
-	req, err := http.NewRequest(http.MethodGet, trackEndpoint+id, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s", resp.Status)
-	}
-
-	json, err := io.ReadAll(resp.Body)
+	json, err := apiRequest(trackEndpoint+id, token)
 	if err != nil {
 		return nil, err
 	}
 
-	track := Track{Name: gjson.Get(string(json), "name").String()}
-	artists := gjson.Get(string(json), "artists.#.name")
-	for _, artist := range artists.Array() {
-		track.Artists = append(track.Artists, artist.String())
-	}
-
-	return []Track{track}, nil
+	return []Track{trackInfo(json)}, nil
 }
 
 func extractAlbumTracks(url, token string) ([]Track, error) {
@@ -75,46 +52,58 @@ func extractAlbumTracks(url, token string) ([]Track, error) {
 	}
 
 	id := extractIDFromUrl(url)
-	req, err := http.NewRequest(http.MethodGet, albumEndpoint+id, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", "Bearer "+token)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("%s", resp.Status)
-	}
-
-	json, err := io.ReadAll(resp.Body)
+	json, err := apiRequest(albumEndpoint+id, token)
 	if err != nil {
 		return nil, err
 	}
 
 	tracks := make([]Track, 0)
-	result := gjson.Get(string(json), "tracks.items")
+	result := gjson.Get(json, "tracks.items")
 	result.ForEach(func(key, value gjson.Result) bool {
-		track := Track{Name: gjson.Get(value.String(), "name").String()}
-		artists := gjson.Get(value.String(), "artists.#.name")
-		for _, artist := range artists.Array() {
-			track.Artists = append(track.Artists, artist.String())
-		}
-
-		tracks = append(tracks, track)
+		tracks = append(tracks, trackInfo(value.String()))
 		return true
 	})
 
-	fmt.Println(tracks)
 	return tracks, nil
 }
 
 func extractIDFromUrl(url string) string {
 	split := strings.Split(url, "/")
 	return split[len(split)-1]
+}
+
+func apiRequest(url, token string) (respBody string, err error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("%s", resp.Status)
+	}
+
+	json, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(json), nil
+}
+
+func trackInfo(json string) Track {
+	track := Track{Name: gjson.Get(json, "name").String()}
+	artists := gjson.Get(json, "artists.#.name")
+	for _, artist := range artists.Array() {
+		track.Artists = append(track.Artists, artist.String())
+	}
+
+	return track
 }

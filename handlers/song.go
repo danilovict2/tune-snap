@@ -21,7 +21,7 @@ const (
 )
 
 func (cfg *Config) AddSong(c echo.Context) error {
-	_, err := spotify.GetTracks(c.FormValue("url"), cfg.SpotifyAccessToken)
+	tracks, err := spotify.GetTracks(c.FormValue("url"), cfg.SpotifyAccessToken)
 	if err != nil {
 		// Handle 400 Bad Request error by initiating user re-authentication
 		if err.Error() == fmt.Sprintf("%d %s", http.StatusBadRequest, http.StatusText(http.StatusBadRequest)) {
@@ -44,7 +44,7 @@ func (cfg *Config) AddSong(c echo.Context) error {
 		return err
 	}
 
-	return c.String(http.StatusOK, "")
+	return c.JSON(http.StatusOK, tracks)
 }
 
 func (cfg *Config) SpotifyAuth(c echo.Context) error {
