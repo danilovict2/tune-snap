@@ -45,9 +45,7 @@ func (cfg *Config) AddSong(c echo.Context) error {
 		return err
 	}
 
-	if err := youtube.DownloadTracks(tracks); err != nil {
-		return err
-	}
+	_ = youtube.DownloadTracks(tracks)
 	
 	return c.JSON(http.StatusOK, tracks)
 }

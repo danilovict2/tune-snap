@@ -3,9 +3,11 @@ package youtube
 import (
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/danilovict2/shazam-clone/internal/spotify"
 	"github.com/kkdai/youtube/v2"
@@ -19,27 +21,43 @@ type searchResult struct {
 
 const maxRetryAttempts = 5
 
-func DownloadTracks(tracks []spotify.Track) error {
-	for _, track := range tracks {
-		if err := downloadTrack(track); err != nil {
-			return err
+func DownloadTracks(tracks []spotify.Track) (downloaded int) {
+	downloaded = len(tracks)
+	var wg sync.WaitGroup
+	errChan := make(chan error)
+
+	go func ()  {
+		for err := range errChan{
+			log.Println(err)
+			downloaded--
 		}
+	}()
+
+	for _, track := range tracks {
+		wg.Add(1)
+		go downloadTrack(track, errChan, &wg)
 	}
 
-	return nil
+	wg.Wait()
+	close(errChan)
+	return downloaded
 }
 
-func downloadTrack(track spotify.Track) error {
+func downloadTrack(track spotify.Track, errChan chan error, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	match, err := findBestMatch(track)
 	if err != nil {
-		return err
+		errChan <- err
+		return
 	}
 
 	client := youtube.Client{}
 
 	video, err := client.GetVideo(match.videoID)
 	if err != nil {
-		return err
+		errChan <- err
+		return
 	}
 
 	formats := video.Formats.Itag(140)
@@ -47,7 +65,8 @@ func downloadTrack(track spotify.Track) error {
 	fName := fmt.Sprintf("%s_%s", track.Name, strings.Join(track.Artists, "_")) + ".m4a"
 	file, err := os.Create(os.Getenv("SONGS_DIR") + "/" + fName)
 	if err != nil {
-		return err
+		errChan <- err
+		return
 	}
 	defer file.Close()
 
@@ -58,29 +77,31 @@ func downloadTrack(track spotify.Track) error {
 
 	for !isDownloaded {
 		if attempt > maxRetryAttempts {
-			return fmt.Errorf("failed to download video: %s", video.Title)
+			errChan <- fmt.Errorf("failed to download video: %s", video.Title)
+			return
 		}
 
 		stream, _, err := client.GetStream(video, &formats[0])
 		if err != nil {
-			return err
+			errChan <- err
+			return
 		}
 		defer stream.Close()
 
 		if _, err := io.Copy(file, stream); err != nil {
-			return err
+			errChan <- err
+			return
 		}
 
 		fi, err := file.Stat()
 		if err != nil {
-			return err
+			errChan <- err
+			return
 		}
 
 		attempt++
 		isDownloaded = fi.Size() > 0
 	}
-
-	return nil
 }
 
 func findBestMatch(track spotify.Track) (searchResult, error) {
