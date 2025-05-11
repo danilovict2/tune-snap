@@ -32,7 +32,7 @@ func GetTracks(url, token string) ([]Track, error) {
 }
 
 func extractSingleTrack(url, token string) ([]Track, error) {
-	trackPattern := `^https:\/\/open\.spotify\.com\/track\/[a-zA-Z0-9]{22}$`
+	trackPattern := `^https:\/\/open\.spotify\.com\/track\/[a-zA-Z0-9]{22}(\?si=[^&#\s]{16})?$`
 	re := regexp.MustCompile(trackPattern)
 	if !re.MatchString(url) {
 		return nil, fmt.Errorf("invalid track url: %s", url)
@@ -48,7 +48,7 @@ func extractSingleTrack(url, token string) ([]Track, error) {
 }
 
 func extractAlbumTracks(url, token string) ([]Track, error) {
-	albumPattern := `^https:\/\/open\.spotify\.com\/album\/[a-zA-Z0-9]{22}$`
+	albumPattern := `^https:\/\/open\.spotify\.com\/album\/[a-zA-Z0-9]{22}(\?si=[^&#\s]{22})?$`
 	re := regexp.MustCompile(albumPattern)
 	if !re.MatchString(url) {
 		return nil, fmt.Errorf("invalid album url: %s", url)
@@ -71,7 +71,7 @@ func extractAlbumTracks(url, token string) ([]Track, error) {
 }
 
 func extractPlaylistTracks(url, token string) ([]Track, error) {
-	playlistPattern := `^https:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]{22}$`
+	playlistPattern := `^https:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]{22}(\?si=[^&#\s]{22})?$`
 	re := regexp.MustCompile(playlistPattern)
 	if !re.MatchString(url) {
 		return nil, fmt.Errorf("invalid album url: %s", url)
