@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/danilovict2/shazam-clone/internal/audio"
 	"github.com/danilovict2/shazam-clone/internal/spotify"
-	"github.com/danilovict2/shazam-clone/internal/youtube"
 	"github.com/kashifkhan0771/utils/rand"
 	"github.com/labstack/echo/v4"
 	"github.com/tidwall/gjson"
@@ -45,7 +45,7 @@ func (cfg *Config) AddSong(c echo.Context) error {
 		return err
 	}
 
-	_ = youtube.DownloadTracks(tracks)
+	_ = audio.SaveTracks(tracks, cfg.MongoClient.Database("shazam").Collection("songs"))
 	
 	return c.JSON(http.StatusOK, tracks)
 }

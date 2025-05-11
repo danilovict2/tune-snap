@@ -1,4 +1,4 @@
-package youtube
+package audio
 
 import (
 	"fmt"
@@ -6,12 +6,15 @@ import (
 	"log"
 	"math"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
+	"github.com/danilovict2/shazam-clone/internal/db"
 	"github.com/danilovict2/shazam-clone/internal/spotify"
 	"github.com/kkdai/youtube/v2"
 	"github.com/raitonoberu/ytsearch"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type searchResult struct {
@@ -21,54 +24,62 @@ type searchResult struct {
 
 const maxRetryAttempts = 5
 
-func DownloadTracks(tracks []spotify.Track) (downloaded int) {
-	downloaded = len(tracks)
+func SaveTracks(tracks []spotify.Track, songs *mongo.Collection) (saved int) {
+	saved = len(tracks)
 	var wg sync.WaitGroup
-	errChan := make(chan error)
+	errChan := make(chan error, len(tracks))
 
-	go func ()  {
-		for err := range errChan{
+	go func() {
+		for err := range errChan {
 			log.Println(err)
-			downloaded--
+			saved--
 		}
 	}()
 
 	for _, track := range tracks {
+		id := db.CreateSongID(track.Name, track.Artists)
+		if db.SongExists(songs, id) {
+			continue
+		}
+
 		wg.Add(1)
-		go downloadTrack(track, errChan, &wg)
+		go func() {
+			defer wg.Done()
+			if err := downloadTrack(track, id); err != nil {
+				errChan <- err
+				return
+			}
+		}()
 	}
 
 	wg.Wait()
 	close(errChan)
-	return downloaded
+	return saved
 }
 
-func downloadTrack(track spotify.Track, errChan chan error, wg *sync.WaitGroup) {
-	defer wg.Done()
-
+func downloadTrack(track spotify.Track, outputPath string) error {
 	match, err := findBestMatch(track)
 	if err != nil {
-		errChan <- err
-		return
+		return err
 	}
 
 	client := youtube.Client{}
 
 	video, err := client.GetVideo(match.videoID)
 	if err != nil {
-		errChan <- err
-		return
+		return err
 	}
 
 	formats := video.Formats.Itag(140)
 
-	fName := fmt.Sprintf("%s_%s", track.Name, strings.Join(track.Artists, "_")) + ".m4a"
-	file, err := os.Create(os.Getenv("SONGS_DIR") + "/" + fName)
+	ext := filepath.Ext(outputPath)
+	fName := strings.TrimRight(outputPath, ext) + ".m4a"
+	file, err := os.CreateTemp(os.Getenv("SONGS_DIR"), fName)
 	if err != nil {
-		errChan <- err
-		return
+		return err
 	}
 	defer file.Close()
+	defer os.Remove(file.Name())
 
 	// Downloads may occasionally fail when using the github.com/kkdai/youtube/v2 library.
 	// Implement a retry mechanism with a limit on the number of attempts to handle such cases.
@@ -77,31 +88,29 @@ func downloadTrack(track spotify.Track, errChan chan error, wg *sync.WaitGroup) 
 
 	for !isDownloaded {
 		if attempt > maxRetryAttempts {
-			errChan <- fmt.Errorf("failed to download video: %s", video.Title)
-			return
+			return fmt.Errorf("failed to download video: %s", video.Title)
 		}
 
 		stream, _, err := client.GetStream(video, &formats[0])
 		if err != nil {
-			errChan <- err
-			return
+			return err
 		}
 		defer stream.Close()
 
 		if _, err := io.Copy(file, stream); err != nil {
-			errChan <- err
-			return
+			return err
 		}
 
 		fi, err := file.Stat()
 		if err != nil {
-			errChan <- err
-			return
+			return err
 		}
 
 		attempt++
 		isDownloaded = fi.Size() > 0
 	}
+
+	return convertToWav(file.Name())
 }
 
 func findBestMatch(track spotify.Track) (searchResult, error) {
