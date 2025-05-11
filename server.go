@@ -20,14 +20,14 @@ func main() {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	uri := os.Getenv("MONGODB_CONNECTION_STRING")
+	if err := os.Mkdir(os.Getenv("SONGS_DIR"), os.ModePerm); err != nil && !errors.Is(err, os.ErrExist) {
+		log.Fatal(err)
+	}
+
+	uri := os.Getenv("MONGODB_URI")
 	client, err := mongo.Connect(options.Client().ApplyURI(uri))
 	if err != nil {
 		log.Fatalf("Error connection to database: %v", err)
-	}
-
-	if err := os.Mkdir(os.Getenv("SONGS_DIR"), os.ModePerm); err != nil && !errors.Is(err, os.ErrExist) {
-		log.Fatal(err)
 	}
 
 	defer func() {
