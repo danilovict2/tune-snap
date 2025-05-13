@@ -18,7 +18,7 @@ const (
 
 var ranges = [...]int{40, 80, 120, 180, 300}
 
-func Fingerprint(input []float64, duration float64, sampleRate uint32) ([]models.SongPoint, error) {
+func Fingerprint(input []float64, duration float64, sampleRate uint32, songID string) ([]models.SongPoint, error) {
 	downsampled, err := downsample(input, int(sampleRate), int(sampleRate)/dsFactor)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func Fingerprint(input []float64, duration float64, sampleRate uint32) ([]models
 
 		fp := hash(points[0], points[1], points[2], points[3])
 		chunkTime := float64(chunkIdx) * chunkDuration
-		songPoints = append(songPoints, models.SongPoint{Fingerprint: fp, TimeMS: chunkTime * 1000})
+		songPoints = append(songPoints, models.SongPoint{SongID: songID, Fingerprint: fp, TimeMS: chunkTime * 1000})
 	}
 
 	return songPoints, nil
@@ -69,7 +69,7 @@ func partition(audio []float64) [][]complex128 {
 		for j := range chunkSize {
 			chunk = append(chunk, complex(audio[(i*chunkSize)+j], 0))
 		}
-		
+
 		chunks = append(chunks, fft.FFT(chunk))
 	}
 
