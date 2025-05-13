@@ -11,6 +11,7 @@ import (
 	"sync"
 
 	"github.com/danilovict2/shazam-clone/internal/db"
+	"github.com/danilovict2/shazam-clone/internal/fingerprint"
 	"github.com/danilovict2/shazam-clone/internal/spotify"
 	"github.com/kkdai/youtube/v2"
 	"github.com/raitonoberu/ytsearch"
@@ -49,6 +50,20 @@ func SaveTracks(tracks []spotify.Track, songs *mongo.Collection) (saved int) {
 				errChan <- err
 				return
 			}
+
+			song, err := readWav(filepath.Join(os.Getenv("SONGS_DIR"), id + ".wav"))
+			if err != nil {
+				errChan <- err
+				return
+			}
+
+			fp, err := fingerprint.Fingerprint(song.Audio, song.Duration, song.SampleRate)
+			if err != nil {
+				errChan <- err
+				return
+			}
+
+			fmt.Println(fp)
 		}()
 	}
 
