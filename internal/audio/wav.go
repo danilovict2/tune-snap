@@ -25,9 +25,9 @@ type Wav struct {
 }
 
 type wavHeader struct {
-	ChunkID       uint32
+	ChunkID       [4]byte
 	ChunkSize     uint32
-	Format        uint32
+	Format        [4]byte
 	Subchunk1ID   uint32
 	Subchunk1Size uint32
 	AudioFormat   uint16
@@ -93,6 +93,10 @@ func readWav(path string) (*Wav, error) {
 	var header wavHeader
 	if err := binary.Read(bytes.NewReader(data[:44]), binary.LittleEndian, &header); err != nil {
 		return nil, err
+	}
+
+	if string(header.ChunkID[:]) != "RIFF" || string(header.Format[:]) != "WAVE" || header.AudioFormat != 1 || header.BitsPerSample != 16 {
+		return nil, fmt.Errorf("unsupported WAV file format")
 	}
 
 	sample, err := BytesToSamples(data[44:])
