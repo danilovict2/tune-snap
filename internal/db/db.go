@@ -9,7 +9,7 @@ import (
 )
 
 func SongExists(songs *mongo.Collection, songID string) bool {
-	err := songs.FindOne(context.TODO(), bson.D{{Key: "SongID", Value: songID}}).Decode(&bson.M{})
+	err := songs.FindOne(context.TODO(), bson.D{{Key: "song_id", Value: songID}}).Decode(&bson.M{})
 	return err == nil
 }
 

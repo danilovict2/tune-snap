@@ -1,6 +1,7 @@
 package audio
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -57,13 +58,16 @@ func SaveTracks(tracks []spotify.Track, songs *mongo.Collection) (saved int) {
 				return
 			}
 
-			fp, err := fingerprint.Fingerprint(song.Audio, song.Duration, song.SampleRate)
+			points, err := fingerprint.Fingerprint(song.Audio, song.Duration, song.SampleRate, id)
 			if err != nil {
 				errChan <- err
 				return
 			}
 
-			fmt.Println(fp)
+			if _, err := songs.InsertMany(context.TODO(), points); err != nil {
+				errChan <- err
+				return
+			}
 		}()
 	}
 
