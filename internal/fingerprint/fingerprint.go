@@ -5,19 +5,27 @@ import (
 	"math/cmplx"
 
 	"github.com/danilovict2/shazam-clone/models"
-	"github.com/scientificgo/fft"
+	"github.com/mattetti/audio"
+	"github.com/mattetti/audio/transforms"
+	"github.com/mjibson/go-dsp/fft"
 )
 
 const (
 	chunkSize   int   = 4000
 	fuzz_factor int64 = 2
+	dsFactor    int   = 4
 )
 
 var ranges = [...]int{40, 80, 120, 180, 300}
 
-func Fingerprint(audio []byte, audioDuration float64) []models.SongPoint {
-	chunks := partition(audio)
-	chunkDuration := audioDuration / float64(len(chunks))
+func Fingerprint(input []float64, duration float64, sampleRate uint32) ([]models.SongPoint, error) {
+	downsampled, err := downsample(input, int(sampleRate), int(sampleRate)/dsFactor)
+	if err != nil {
+		return nil, err
+	}
+
+	chunks := partition(downsampled)
+	chunkDuration := duration / float64(len(chunks))
 	songPoints := make([]models.SongPoint, 0)
 
 	for chunkIdx, chunk := range chunks {
@@ -39,20 +47,30 @@ func Fingerprint(audio []byte, audioDuration float64) []models.SongPoint {
 		songPoints = append(songPoints, models.SongPoint{Fingerprint: fp, TimeMS: chunkTime * 1000})
 	}
 
-	return songPoints
+	return songPoints, nil
 }
 
-func partition(audio []byte) [][]complex128 {
-	chunks := make([][]complex128, 0)
+func downsample(input []float64, sampleRate int, targetRate int) ([]float64, error) {
+	buf := audio.NewPCMFloatBuffer(input, &audio.Format{SampleRate: sampleRate})
+
+	if err := transforms.Resample(buf, float64(targetRate)); err != nil {
+		return nil, err
+	}
+
+	return buf.Floats, nil
+}
+
+func partition(audio []float64) [][]complex128 {
 	sampleSize := len(audio) / chunkSize
+	chunks := make([][]complex128, 0)
 
 	for i := range sampleSize {
 		chunk := make([]complex128, 0)
 		for j := range chunkSize {
-			chunk = append(chunk, complex(float64(audio[(i*chunkSize)+j]), 0))
+			chunk = append(chunk, complex(audio[(i*chunkSize)+j], 0))
 		}
-
-		chunks = append(chunks, fft.Fft(chunk, false))
+		
+		chunks = append(chunks, fft.FFT(chunk))
 	}
 
 	return chunks
