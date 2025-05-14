@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	chunkSize   int   = 4000
 	fuzz_factor int64 = 2
 	dsFactor    int   = 4
+	frameLen    int   = 1024
+	frameShift  int   = frameLen / 32
 )
 
 var ranges = [...]int{40, 80, 120, 180, 300}
@@ -24,16 +25,16 @@ func Fingerprint(input []float64, duration float64, sampleRate uint32, songID st
 		return nil, err
 	}
 
-	chunks := partition(downsampled)
-	chunkDuration := duration / float64(len(chunks))
+	spectogram := stft(downsampled)
+	chunkDuration := duration / float64(len(spectogram))
 	songPoints := make([]models.SongPoint, 0)
 
-	for chunkIdx, chunk := range chunks {
+	for winIdx, window := range spectogram {
 		highscores := make([]float64, len(ranges))
 		points := make([]int64, len(ranges))
 
 		for freq := 40; freq < 300; freq++ {
-			mag := math.Log(cmplx.Abs(chunk[freq]) + 1)
+			mag := math.Log(cmplx.Abs(window[freq]) + 1)
 			index := getFreqRangeIndex(freq)
 
 			if mag > highscores[index] {
@@ -43,7 +44,7 @@ func Fingerprint(input []float64, duration float64, sampleRate uint32, songID st
 		}
 
 		fp := hash(points[0], points[1], points[2], points[3])
-		chunkTime := float64(chunkIdx) * chunkDuration
+		chunkTime := float64(winIdx) * chunkDuration
 		songPoints = append(songPoints, models.SongPoint{SongID: songID, Fingerprint: fp, TimeMS: chunkTime * 1000})
 	}
 
@@ -60,20 +61,31 @@ func downsample(input []float64, sampleRate int, targetRate int) ([]float64, err
 	return buf.Floats, nil
 }
 
-func partition(audio []float64) [][]complex128 {
-	sampleSize := len(audio) / chunkSize
-	chunks := make([][]complex128, 0)
+func stft(audio []float64) [][]complex128 {
+	numFrames := int(float64(len(audio)-frameLen)/float64(frameShift)) + 1
+	spectogram := make([][]complex128, numFrames)
 
-	for i := range sampleSize {
-		chunk := make([]complex128, 0)
-		for j := range chunkSize {
-			chunk = append(chunk, complex(audio[(i*chunkSize)+j], 0))
-		}
-
-		chunks = append(chunks, fft.FFT(chunk))
+	windows := make([]float64, numFrames)
+	arg := 2.0 * math.Pi / float64(numFrames-1)
+	for i := range windows {
+		windows[i] = 0.5 - 0.5*math.Cos(arg*float64(i))
 	}
 
-	return chunks
+	frames := make([][]float64, numFrames)
+	for i := range numFrames {
+		frames[i] = audio[i*frameShift : i*frameShift+frameLen]
+	}
+
+	for i, frame := range frames {
+		windowed := make([]float64, len(frame))
+		for _, window := range windows {
+			windowed[i] = frame[i] * window
+		}
+
+		spectogram[i] = fft.FFTReal(windowed)
+	}
+
+	return spectogram
 }
 
 func getFreqRangeIndex(freq int) int {
