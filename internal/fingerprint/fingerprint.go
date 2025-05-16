@@ -17,7 +17,7 @@ const (
 	frameShift int   = 512
 )
 
-var ranges = [...]int{40, 80, 120, 180, 300}
+var bins = []struct{ start, end int }{{40, 80}, {80, 120}, {120, 300}, {300, 600}}
 
 func Fingerprint(input []float64, duration float64, sampleRate uint32, songID string) ([]models.SongPoint, error) {
 	downsampled, err := downsample(input, int(sampleRate), int(sampleRate)/dsFactor)
@@ -30,20 +30,21 @@ func Fingerprint(input []float64, duration float64, sampleRate uint32, songID st
 	songPoints := make([]models.SongPoint, 0)
 
 	for chunkIdx, chunk := range spectogram {
-		highscores := make([]float64, len(ranges))
-		points := make([]int64, len(ranges))
+		highscores := make([]float64, len(bins))
+		peaks := make([]int64, len(bins))
 
-		for freq := 40; freq < 300; freq++ {
-			mag := math.Log(cmplx.Abs(chunk[freq]) + 1)
-			index := getFreqRangeIndex(freq)
+		for i, bin := range bins {
+			for freq := bin.start; freq < bin.end; freq++ {
+				mag := math.Log(cmplx.Abs(chunk[freq]) + 1)
 
-			if mag > highscores[index] {
-				highscores[index] = mag
-				points[index] = int64(freq)
+				if mag > highscores[i] {
+					highscores[i] = mag
+					peaks[i] = int64(freq)
+				}
 			}
 		}
 
-		fp := hash(points[0], points[1], points[2], points[3])
+		fp := hash(peaks[0], peaks[1], peaks[2], peaks[3])
 		chunkTime := float64(chunkIdx) * chunkDuration
 		songPoints = append(songPoints, models.SongPoint{SongID: songID, Fingerprint: fp, TimeMS: chunkTime * 1000})
 	}
@@ -86,15 +87,6 @@ func stft(audio []float64) [][]complex128 {
 	}
 
 	return spectogram
-}
-
-func getFreqRangeIndex(freq int) int {
-	i := 0
-	for ranges[i] < freq {
-		i++
-	}
-
-	return i
 }
 
 func hash(p1, p2, p3, p4 int64) int64 {
