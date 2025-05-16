@@ -9,13 +9,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-
-	"github.com/kashifkhan0771/utils/math"
 )
 
 const (
 	channels   = "2"
-	sampleRate = "48000"
+	sampleRate = "44100"
 )
 
 type Wav struct {
@@ -95,9 +93,9 @@ func readWav(path string) (*Wav, error) {
 		return nil, err
 	}
 
-	if string(header.ChunkID[:]) != "RIFF" || string(header.Format[:]) != "WAVE" || header.AudioFormat != 1 || header.BitsPerSample != 16 {
+	/*if string(header.ChunkID[:]) != "RIFF" || string(header.Format[:]) != "WAVE" || header.AudioFormat != 1 || header.BitsPerSample != 16 {
 		return nil, fmt.Errorf("unsupported WAV file format")
-	}
+	}*/
 
 	sample, err := BytesToSamples(data[44:])
 	if err != nil {
@@ -120,14 +118,11 @@ func BytesToSamples(data []byte) ([]float64, error) {
 
 	sampleLength := len(data) / 2
 	samples := make([]float64, sampleLength)
-	min, max := 1e9, -1e9
+	min, max := -32768.0, 32768.0
 
 	for i := 0; i < len(data); i += 2 {
 		sample := binary.LittleEndian.Uint16(data[i : i+2])
 		samples[i/2] = float64(sample)
-
-		min = math.Min(min, samples[i/2])
-		max = math.Max(max, samples[i/2])
 	}
 
 	// Normalize sample to [-1, 1]
