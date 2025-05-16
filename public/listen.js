@@ -1,7 +1,7 @@
 const listenButton = document.getElementById('listen-button');
 listenButton.addEventListener('click', listen);
 
-const recordingDuration = 3000;
+const recordingDuration = 5000;
 const channels = 2;
 const audioContext = new AudioContext();
 
@@ -30,11 +30,12 @@ function sendAudio(audio) {
     const formData = new FormData();
     formData.append('sample', audio);
     formData.append('audio_duration', audioDuration);
+    formData.append('sample_rate', audioContext.sampleRate)
 
     fetch('/api/recognize', {
         method: 'POST',
         body: formData,
     })
-    .then(r => console.log(r))
-    .catch(e => console.log(e));
+        .then(r => console.log(r))
+        .catch(e => console.log(e));
 }
