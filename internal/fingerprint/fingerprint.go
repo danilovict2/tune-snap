@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	fuzz_factor int64 = 2
-	dsFactor    int   = 4
-	frameLen    int   = 1024
-	frameShift  int   = frameLen / 32
+	fuzzFactor int64 = 2
+	dsFactor   int   = 4
+	frameLen   int   = 1024
+	frameShift int   = 512
 )
 
 var ranges = [...]int{40, 80, 120, 180, 300}
@@ -29,12 +29,12 @@ func Fingerprint(input []float64, duration float64, sampleRate uint32, songID st
 	chunkDuration := duration / float64(len(spectogram))
 	songPoints := make([]models.SongPoint, 0)
 
-	for winIdx, window := range spectogram {
+	for chunkIdx, chunk := range spectogram {
 		highscores := make([]float64, len(ranges))
 		points := make([]int64, len(ranges))
 
 		for freq := 40; freq < 300; freq++ {
-			mag := math.Log(cmplx.Abs(window[freq]) + 1)
+			mag := math.Log(cmplx.Abs(chunk[freq]) + 1)
 			index := getFreqRangeIndex(freq)
 
 			if mag > highscores[index] {
@@ -44,7 +44,7 @@ func Fingerprint(input []float64, duration float64, sampleRate uint32, songID st
 		}
 
 		fp := hash(points[0], points[1], points[2], points[3])
-		chunkTime := float64(winIdx) * chunkDuration
+		chunkTime := float64(chunkIdx) * chunkDuration
 		songPoints = append(songPoints, models.SongPoint{SongID: songID, Fingerprint: fp, TimeMS: chunkTime * 1000})
 	}
 
@@ -65,8 +65,8 @@ func stft(audio []float64) [][]complex128 {
 	numFrames := int(float64(len(audio)-frameLen)/float64(frameShift)) + 1
 	spectogram := make([][]complex128, numFrames)
 
-	windows := make([]float64, numFrames)
-	arg := 2.0 * math.Pi / float64(numFrames-1)
+	windows := make([]float64, frameLen)
+	arg := 2.0 * math.Pi / float64(frameLen-1)
 	for i := range windows {
 		windows[i] = 0.5 - 0.5*math.Cos(arg*float64(i))
 	}
@@ -77,9 +77,9 @@ func stft(audio []float64) [][]complex128 {
 	}
 
 	for i, frame := range frames {
-		windowed := make([]float64, len(frame))
-		for _, window := range windows {
-			windowed[i] = frame[i] * window
+		windowed := make([]float64, frameLen)
+		for j, window := range windows {
+			windowed[j] = frame[j] * window
 		}
 
 		spectogram[i] = fft.FFTReal(windowed)
@@ -98,5 +98,5 @@ func getFreqRangeIndex(freq int) int {
 }
 
 func hash(p1, p2, p3, p4 int64) int64 {
-	return (p4-(p4%fuzz_factor))*10000000 + (p3-(p3%fuzz_factor))*100000 + (p2-(p2%fuzz_factor))*100 + (p1 - (p1 % fuzz_factor))
+	return (p4-(p4%fuzzFactor))*10000000 + (p3-(p3%fuzzFactor))*100000 + (p2-(p2%fuzzFactor))*100 + (p1 - (p1 % fuzzFactor))
 }
