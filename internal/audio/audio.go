@@ -52,7 +52,13 @@ func SaveTracks(tracks []spotify.Track, songs *mongo.Collection) (saved int) {
 				return
 			}
 
-			song, err := readWav(filepath.Join(os.Getenv("SONGS_DIR"), id + ".wav"))
+			wavFile, err := os.Open(filepath.Join(os.Getenv("SONGS_DIR"), id + ".wav"))
+			if err != nil {
+				errChan <- err
+				return
+			}
+
+			song, err := ReadWav(wavFile)
 			if err != nil {
 				errChan <- err
 				return

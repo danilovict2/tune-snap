@@ -68,18 +68,8 @@ func convertToWav(inputPath string) error {
 	return nil
 }
 
-func readWav(path string) (*Wav, error) {
-	if filepath.Ext(path) != ".wav" {
-		return nil, fmt.Errorf("invalid file format: expected a .wav file, got %s", filepath.Ext(path))
-	}
-
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	data, err := io.ReadAll(file)
+func ReadWav(wavFile io.Reader) (*Wav, error) {
+	data, err := io.ReadAll(wavFile)
 	if err != nil {
 		return nil, err
 	}
@@ -93,9 +83,9 @@ func readWav(path string) (*Wav, error) {
 		return nil, err
 	}
 
-	/*if string(header.ChunkID[:]) != "RIFF" || string(header.Format[:]) != "WAVE" || header.AudioFormat != 1 || header.BitsPerSample != 16 {
+	if string(header.ChunkID[:]) != "RIFF" || string(header.Format[:]) != "WAVE" || header.AudioFormat != 1 || header.BitsPerSample != 16 {
 		return nil, fmt.Errorf("unsupported WAV file format")
-	}*/
+	}
 
 	sample, err := BytesToSamples(data[44:])
 	if err != nil {
