@@ -1,3 +1,4 @@
 .env
 songs
 node_modules
+public/build.js
