@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"strings"
 
 	"github.com/danilovict2/shazam-clone/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -12,17 +11,6 @@ import (
 func SongExists(songs *mongo.Collection, songID string) bool {
 	err := songs.FindOne(context.TODO(), bson.D{{Key: "song_id", Value: songID}}).Decode(&bson.M{})
 	return err == nil
-}
-
-func CreateSongID(name string, artists []string) string {
-	id := strings.ToLower(strings.ReplaceAll(name, " ", "_"))
-	id = strings.ReplaceAll(id, "/", "")
-
-	for _, artist := range artists {
-		id += "_" + strings.ToLower(strings.ReplaceAll(strings.ReplaceAll(artist, " ", "_"), "/", ""))
-	}
-
-	return id
 }
 
 func FindSongPoints(songs *mongo.Collection, fingerprints []int64) (map[int64][]models.SongPoint, error) {

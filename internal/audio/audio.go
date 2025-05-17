@@ -39,20 +39,25 @@ func SaveTracks(tracks []spotify.Track, songs *mongo.Collection) (saved int) {
 	}()
 
 	for _, track := range tracks {
-		id := db.CreateSongID(track.Name, track.Artists)
-		if db.SongExists(songs, id) {
+		match, err := findBestMatch(track)
+		if err != nil {
+			errChan <- err
+			continue
+		}
+
+		if db.SongExists(songs, match.videoID) {
 			continue
 		}
 
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if err := downloadTrack(track, id); err != nil {
+			if err := downloadYoutubeAudio(match); err != nil {
 				errChan <- err
 				return
 			}
 
-			wavFile, err := os.Open(filepath.Join(os.Getenv("SONGS_DIR"), id + ".wav"))
+			wavFile, err := os.Open(filepath.Join(os.Getenv("SONGS_DIR"), match.videoID+".wav"))
 			if err != nil {
 				errChan <- err
 				return
@@ -64,7 +69,7 @@ func SaveTracks(tracks []spotify.Track, songs *mongo.Collection) (saved int) {
 				return
 			}
 
-			points, err := fingerprint.Fingerprint(song.Audio, song.Duration, song.SampleRate, id)
+			points, err := fingerprint.Fingerprint(song.Audio, song.Duration, song.SampleRate, match.videoID)
 			if err != nil {
 				errChan <- err
 				return
@@ -82,23 +87,17 @@ func SaveTracks(tracks []spotify.Track, songs *mongo.Collection) (saved int) {
 	return saved
 }
 
-func downloadTrack(track spotify.Track, outputPath string) error {
-	match, err := findBestMatch(track)
-	if err != nil {
-		return err
-	}
-
+func downloadYoutubeAudio(result searchResult) error {
 	client := youtube.Client{}
 
-	video, err := client.GetVideo(match.videoID)
+	video, err := client.GetVideo(result.videoID)
 	if err != nil {
 		return err
 	}
 
 	formats := video.Formats.Itag(140)
 
-	ext := filepath.Ext(outputPath)
-	fName := strings.TrimRight(outputPath, ext) + ".m4a"
+	fName := result.videoID + ".m4a"
 	file, err := os.CreateTemp(os.Getenv("SONGS_DIR"), fName)
 	if err != nil {
 		return err
