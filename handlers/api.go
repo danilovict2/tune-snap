@@ -2,9 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"io"
 	"net/http"
-	"strconv"
 
 	"github.com/danilovict2/shazam-clone/internal/audio"
 	"github.com/danilovict2/shazam-clone/internal/fingerprint"
@@ -24,27 +22,12 @@ func (cfg *Config) Recognize(c echo.Context) error {
 	}
 	defer f.Close()
 
-	sample, err := io.ReadAll(f)
+	sample, err := audio.ReadWav(f)
 	if err != nil {
 		return err
 	}
 
-	audioDuration, err := strconv.ParseFloat(c.FormValue("audio_duration"), 64)
-	if err != nil {
-		return err
-	}
-
-	samples, err := audio.BytesToSamples(sample)
-	if err != nil {
-		return err
-	}
-
-	sampleRate, err := strconv.ParseUint(c.FormValue("sample_rate"), 10, 32)
-	if err != nil {
-		return err
-	}
-
-	fingeprints, err := fingerprint.Fingerprint(samples, audioDuration, uint32(sampleRate), "")
+	fingeprints, err := fingerprint.Fingerprint(sample.Audio, sample.Duration, sample.SampleRate, "")
 	if err != nil {
 		return err
 	}

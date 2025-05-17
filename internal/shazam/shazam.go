@@ -13,9 +13,7 @@ func Recognize(recordedPoints []models.SongPoint, songs *mongo.Collection) (map[
 
 	fingerprints := make([]int64, 0)
 	for fp := range fingerprintMap {
-		if fp != 0 {
-			fingerprints = append(fingerprints, fp)
-		}
+		fingerprints = append(fingerprints, fp)
 	}
 
 	dbPoints, err := db.FindSongPoints(songs, fingerprints)
