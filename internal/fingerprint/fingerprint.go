@@ -45,6 +45,11 @@ func Fingerprint(input []float64, duration float64, sampleRate uint32, songID st
 		}
 
 		fp := hash(peaks[0], peaks[1], peaks[2], peaks[3])
+		// Skip frames with no significant audio content (likely silence)
+		if fp == 0 {
+			continue
+		}
+
 		chunkTime := float64(chunkIdx) * chunkDuration
 		songPoints = append(songPoints, models.SongPoint{SongID: songID, Fingerprint: fp, TimeMS: chunkTime * 1000})
 	}
