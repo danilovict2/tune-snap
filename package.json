@@ -24,7 +24,10 @@
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
+    "@glidejs/glide": "^3.7.1",
+    "css-loader": "^7.1.2",
     "extendable-media-recorder": "^9.2.26",
-    "extendable-media-recorder-wav-encoder": "^7.0.128"
+    "extendable-media-recorder-wav-encoder": "^7.0.128",
+    "style-loader": "^4.0.0"
   }
 }

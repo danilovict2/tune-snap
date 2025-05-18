@@ -71,3 +71,14 @@ body {
 .send-button:hover {
     background-color: #17a44c;
 }
+
+.glide {
+    height: 315px;
+    width: 50% !important;
+}
+
+.glide__slide {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
