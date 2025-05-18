@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/danilovict2/shazam-clone/internal/audio"
@@ -37,6 +36,5 @@ func (cfg *Config) Recognize(c echo.Context) error {
 		return err
 	}
 
-	fmt.Println(matches)
 	return c.JSON(http.StatusOK, matches)
 }

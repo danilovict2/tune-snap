@@ -1,5 +1,6 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile } from "@ffmpeg/util";
+import Glide from "@glidejs/glide";
 import { MediaRecorder, register } from "extendable-media-recorder";
 import { connect } from "extendable-media-recorder-wav-encoder";
 
@@ -13,9 +14,14 @@ const recordingDuration = 20000;
 const channels = 2;
 const sampleRate = '44100';
 
+const glide = document.querySelector('.glide');
+const slides = document.querySelector('.glide__slides');
+const bullets = document.querySelector('.glide__bullets');
+
 async function listen() {
     listenButton.classList.toggle('pulse');
     listenButton.innerHTML = `<h2>Listening...</h2>`
+    listenButton.disabled = true;
 
     if (!ffmpeg.loaded) {
         await ffmpeg.load();
@@ -75,6 +81,31 @@ function sendAudio(audio) {
         method: 'POST',
         body: formData,
     })
-        .then(r => console.log(r))
+        .then(r => r.json())
+        .then(songs => {
+            slides.innerHTML = '';
+            bullets.innerHTML = '';
+            for (const i in songs) {
+                bullets.innerHTML += `
+                    <button class="glide__bullet" data-glide-dir="=${i}"></button>
+                `
+
+                slides.innerHTML += `
+                <li class="glide__slide">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/${songs[i].SongID}?si=sw6IEZY0IB1BUofG" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </li>`
+            }
+
+            glide.classList.remove('d-none');
+
+            new Glide('.glide', {
+                type: 'slider',
+                focusAt: 'center',
+            }).mount();
+
+            listenButton.classList.toggle('pulse');
+            listenButton.innerHTML = `<h2>Listen</h2>`
+            listenButton.disabled = false;
+        })
         .catch(e => console.log(e));
 }
