@@ -62,6 +62,8 @@ func SaveTracks(tracks []spotify.Track, songs *mongo.Collection) (saved int) {
 				errChan <- err
 				return
 			}
+			defer wavFile.Close()
+			defer os.Remove(wavFile.Name())
 
 			song, err := ReadWav(wavFile)
 			if err != nil {
