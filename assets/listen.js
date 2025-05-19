@@ -78,7 +78,6 @@ async function listen() {
         });
     } catch (e) {
         console.log(e);
-    } finally {
         reset();
     }
 }
