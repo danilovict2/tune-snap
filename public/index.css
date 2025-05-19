@@ -86,3 +86,17 @@ body {
 .d-none {
     display: none;
 }
+
+.icons {
+    width: 50%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.icons button {
+    background: transparent;
+    border: none !important;
+    color: white;
+    cursor: pointer;
+}

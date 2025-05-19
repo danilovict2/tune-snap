@@ -3,9 +3,14 @@ import { fetchFile } from "@ffmpeg/util";
 import Glide from "@glidejs/glide";
 import { MediaRecorder, register } from "extendable-media-recorder";
 import { connect } from "extendable-media-recorder-wav-encoder";
+import { createElement, Mic, MicOff, Monitor, MonitorOff } from "lucide";
+
+await register(await connect());
 
 const ffmpeg = new FFmpeg();
-ffmpeg.load();
+await ffmpeg.load();
+
+let audioInput = 'mic';
 
 const listenButton = document.getElementById('listen-button');
 listenButton.addEventListener('click', listen);
@@ -23,54 +28,59 @@ async function listen() {
     listenButton.innerHTML = `<h2>Listening...</h2>`
     listenButton.disabled = true;
 
-    if (!ffmpeg.loaded) {
-        await ffmpeg.load();
-    }
+    try {
+        const mediaDevice =
+            audioInput === "device"
+                ? navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices)
+                : navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
 
-    await register(await connect());
+        const stream = await mediaDevice({ audio: { channelCount: channels, sampleSize: 16 } });
+        const tracks = stream.getAudioTracks();
+        const audioStream = new MediaStream(tracks);
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: channels, sampleSize: 16 } });
-    const tracks = stream.getAudioTracks();
-    const audioStream = new MediaStream(tracks);
+        tracks[0].onended = () => {
+            audioStream.getTracks().forEach(t => t.stop());
+        };
 
-    tracks[0].onended = () => {
-        audioStream.getTracks().forEach(t => t.stop());
-    };
-
-    for (const track of stream.getVideoTracks()) {
-        track.stop();
-    }
-
-    const recorder = new MediaRecorder(stream, {
-        mimeType: 'audio/wav',
-    });
-
-    recorder.start();
-    const chunks = [];
-    recorder.ondataavailable = e => {
-        chunks.push(e.data);
-    };
-
-    setTimeout(() => {
-        recorder.stop();
-    }, recordingDuration);
-
-    recorder.addEventListener('stop', async () => {
-        const blob = new Blob(chunks, { type: 'audio/wav' });
-        const inputFile = 'input.wav';
-        const outputFile = 'output.wav';
-
-        await ffmpeg.writeFile(inputFile, await fetchFile(blob));
-        const exitCode = await ffmpeg.exec(['-i', inputFile, '-c', 'pcm_s16le', '-ar', sampleRate, "-ac", channels, outputFile]);
-        if (exitCode !== 0) {
-            console.log(`ffmpeg exited with code: ${exitCode}`);
-            return;
+        for (const track of stream.getVideoTracks()) {
+            track.stop();
         }
 
-        const data = await ffmpeg.readFile(outputFile);
-        const outputBlob = new Blob([data.buffer], { type: 'audio/wav' });
-        sendAudio(outputBlob);
-    });
+        const recorder = new MediaRecorder(stream, {
+            mimeType: 'audio/wav',
+        });
+
+        recorder.start();
+        const chunks = [];
+        recorder.ondataavailable = e => {
+            chunks.push(e.data);
+        };
+
+        setTimeout(() => {
+            recorder.stop();
+        }, recordingDuration);
+
+        recorder.addEventListener('stop', async () => {
+            const blob = new Blob(chunks, { type: 'audio/wav' });
+            const inputFile = 'input.wav';
+            const outputFile = 'output.wav';
+
+            await ffmpeg.writeFile(inputFile, await fetchFile(blob));
+            const exitCode = await ffmpeg.exec(['-i', inputFile, '-c', 'pcm_s16le', '-ar', sampleRate, "-ac", channels, outputFile]);
+            if (exitCode !== 0) {
+                console.log(`ffmpeg exited with code: ${exitCode}`);
+                return;
+            }
+
+            const data = await ffmpeg.readFile(outputFile);
+            const outputBlob = new Blob([data.buffer], { type: 'audio/wav' });
+            sendAudio(outputBlob);
+        });
+    } catch (e) {
+        console.log(e);
+    } finally {
+        reset();
+    }
 }
 
 function sendAudio(audio) {
@@ -102,10 +112,41 @@ function sendAudio(audio) {
                 type: 'slider',
                 focusAt: 'center',
             }).mount();
-
-            listenButton.classList.toggle('pulse');
-            listenButton.innerHTML = `<h2>Listen</h2>`
-            listenButton.disabled = false;
         })
-        .catch(e => console.log(e));
+        .catch(e => console.log(e))
+        .finally(() => reset());
 }
+
+function reset() {
+    listenButton.classList.remove('pulse');
+    listenButton.innerHTML = `<h2>Listen</h2>`
+    listenButton.disabled = false;
+}
+
+const micButton = document.getElementById('mic');
+const monitorButton = document.getElementById('monitor');
+
+const mic = createElement(Mic);
+const monitor = createElement(Monitor);
+const micOff = createElement(MicOff);
+const monitorOff = createElement(MonitorOff);
+
+function changeAudioInput() {
+    micButton.firstElementChild.remove();
+    monitorButton.firstElementChild.remove();
+
+    if (audioInput === 'mic') {
+        audioInput = 'device';
+        micButton.appendChild(mic);
+        monitorButton.appendChild(monitorOff);
+    } else {
+        audioInput = 'mic';
+        micButton.appendChild(micOff);
+        monitorButton.appendChild(monitor);
+    }
+}
+
+micButton.addEventListener('click', changeAudioInput);
+monitorButton.addEventListener('click', changeAudioInput);
+
+changeAudioInput();
