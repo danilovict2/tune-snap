@@ -45,9 +45,8 @@ func (cfg *Config) AddSong(c echo.Context) error {
 		return err
 	}
 
-	_ = audio.SaveTracks(tracks, cfg.MongoClient.Database("shazam").Collection("songs"))
-	
-	return c.JSON(http.StatusOK, tracks)
+	saved := audio.SaveTracks(tracks, cfg.MongoClient.Database("shazam").Collection("songs"))
+	return c.String(http.StatusOK, fmt.Sprintf("%d/%d Songs Added", saved, len(tracks)))
 }
 
 func (cfg *Config) SpotifyAuth(c echo.Context) error {
