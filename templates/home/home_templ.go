@@ -8,9 +8,12 @@ package home
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/danilovict2/shazam-clone/templates"
+import (
+	"fmt"
+	"github.com/danilovict2/shazam-clone/templates"
+)
 
-func Hello() templ.Component {
+func Hello(songCount int32) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -43,7 +46,35 @@ func Hello() templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1>Tap to listen</h1><button class=\"listen-button\" id=\"listen-button\"><h2>Listen</h2></button><div class=\"glide d-none\"><div class=\"glide__track\" data-glide-el=\"track\"><ul class=\"glide__slides\"></ul></div><div class=\"glide__arrows\" data-glide-el=\"controls\"><button class=\"glide__arrow glide__arrow--left\" data-glide-dir=\"&lt;\">&lt;</button> <button class=\"glide__arrow glide__arrow--right\" data-glide-dir=\"&gt;\">&gt;</button></div><div class=\"glide__bullets\" data-glide-el=\"controls[nav]\"></div></div><div class=\"icons\"><button id=\"mic\"><i data-lucide=\"mic\"></i></button> <button id=\"monitor\"><i data-lucide=\"monitor-off\"></i></button></div><form method=\"POST\" action=\"/api/add_song\" class=\"add-song-form\"><p>Add new songs</p><input type=\"text\" name=\"url\" placeholder=\"https://open.spotify.com/...\"> <button class=\"send-button\" type=\"submit\">Send</button></form>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<h1>Tap to listen</h1><button class=\"listen-button\" id=\"listen-button\"><h2>Listen</h2></button><div class=\"glide d-none\"><div class=\"glide__track\" data-glide-el=\"track\"><ul class=\"glide__slides\"></ul></div><div class=\"glide__arrows\" data-glide-el=\"controls\"><button class=\"glide__arrow glide__arrow--left\" data-glide-dir=\"&lt;\">&lt;</button> <button class=\"glide__arrow glide__arrow--right\" data-glide-dir=\"&gt;\">&gt;</button></div><div class=\"glide__bullets\" data-glide-el=\"controls[nav]\"></div></div><div class=\"icons\"><button id=\"mic\"><i data-lucide=\"mic\"></i></button> <button id=\"monitor\"><i data-lucide=\"monitor-off\"></i></button></div><form method=\"POST\" action=\"/api/add_song\" class=\"add-song-form\"><p>Add new songs</p><p class=\"song-count\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var3 string
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(songCount))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/home/home.templ`, Line: 31, Col: 27}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, " ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if songCount > 1 {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "Songs ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			} else {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "Song ")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "in library</p><input type=\"text\" name=\"url\" placeholder=\"https://open.spotify.com/...\"> <button class=\"send-button\" type=\"submit\">Send</button></form>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

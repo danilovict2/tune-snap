@@ -1,8 +1,11 @@
 package home
 
-import "github.com/danilovict2/shazam-clone/templates"
+import (
+	"fmt"
+	"github.com/danilovict2/shazam-clone/templates"
+)
 
-templ Hello() {
+templ Hello(songCount int32) {
 	@templates.Base() {
 		<h1>Tap to listen</h1>
 		<button class="listen-button" id="listen-button">
@@ -24,6 +27,15 @@ templ Hello() {
 		</div>
 		<form method="POST" action="/api/add_song" class="add-song-form">
 			<p>Add new songs</p>
+			<p class="song-count">
+				{ fmt.Sprint(songCount) }
+				if songCount > 1 {
+					Songs
+				} else {
+					Song
+				}
+				in library
+			</p>
 			<input type="text" name="url" placeholder="https://open.spotify.com/..."/>
 			<button class="send-button" type="submit">Send</button>
 		</form>

@@ -53,7 +53,7 @@ func main() {
 	}))
 
 
-	e.GET("/", handlers.Home)
+	e.GET("/", config.Home)
 	
 	api := e.Group("/api")
 	api.POST("/recognize", config.Recognize)

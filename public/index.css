@@ -72,6 +72,14 @@ body {
     background-color: #17a44c;
 }
 
+.song-count {
+    font-size: 0.95em;
+    color: #666;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    font-style: italic;
+}
+
 .glide {
     height: 315px;
     width: 50% !important;
