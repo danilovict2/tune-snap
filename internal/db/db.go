@@ -14,26 +14,21 @@ func SongExists(songs *mongo.Collection, songID string) bool {
 	return err == nil
 }
 
-func FindSongPoints(songs *mongo.Collection, fingerprints []int64) (map[int64][]models.SongPoint, error) {
-	ret := make(map[int64][]models.SongPoint)
-	for _, fp := range fingerprints {
-		cursor, err := songs.Find(context.TODO(), bson.D{{Key: "fingerprint", Value: fp}})
-		if err != nil {
-			if err == mongo.ErrNoDocuments {
-				continue
-			}
-			return nil, err
+func SongPointsWithFingerprint(fingeprint int64, songs *mongo.Collection) ([]models.SongPoint, error) {
+	cursor, err := songs.Find(context.TODO(), bson.D{{Key: "fingerprint", Value: fingeprint}})
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
 		}
-
-		var results []models.SongPoint
-		if err := cursor.All(context.TODO(), &results); err != nil {
-			return nil, err
-		}
-
-		ret[fp] = results
+		return nil, err
 	}
 
-	return ret, nil
+	var results []models.SongPoint
+	if err := cursor.All(context.TODO(), &results); err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
 
 func GetSongCount(songs *mongo.Collection) (int32, error) {

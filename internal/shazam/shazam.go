@@ -4,6 +4,7 @@ import (
 	"log"
 	"math"
 	"sort"
+	"sync"
 
 	"github.com/danilovict2/shazam-clone/internal/db"
 	"github.com/danilovict2/shazam-clone/models"
@@ -18,18 +19,7 @@ type Match struct {
 func Recognize(recordedPoints []models.SongPoint, songs *mongo.Collection) ([]Match, error) {
 	log.Printf("Recognize: received %d recorded points", len(recordedPoints))
 	fingerprintMap := toFingeprintMap(recordedPoints)
-
-	fingerprints := make([]int64, 0)
-	for fp := range fingerprintMap {
-		fingerprints = append(fingerprints, fp)
-	}
-	log.Printf("Recognize: extracted %d unique fingerprints", len(fingerprints))
-
-	dbPoints, err := db.FindSongPoints(songs, fingerprints)
-	if err != nil {
-		log.Printf("Recognize: error fetching song points from DB: %v", err)
-		return nil, err
-	}
+	dbPoints := getDbPoints(fingerprintMap, songs)
 	log.Printf("Recognize: fetched song points for %d fingerprints from DB", len(dbPoints))
 
 	timestamps := make(map[string][][2]float64, 0)
@@ -80,4 +70,34 @@ func toFingeprintMap(points []models.SongPoint) map[int64]models.SongPoint {
 	}
 
 	return ret
+}
+
+func getDbPoints(fingerprints map[int64]models.SongPoint, songs *mongo.Collection) map[int64][]models.SongPoint {
+	dbPoints := make(map[int64][]models.SongPoint)
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 10)
+
+	for fp := range fingerprints {
+		wg.Add(1)
+		sem <- struct{}{}
+
+		go func() {
+			defer wg.Done()
+			defer func() { <-sem }()
+
+			points, err := db.SongPointsWithFingerprint(fp, songs)
+			if err != nil {
+				log.Printf("getDbPoints: failed to fetch song points for fingerprint %d: %v", fp, err)
+				return
+			}
+
+			mu.Lock()
+			dbPoints[fp] = points
+			mu.Unlock()
+		}()
+	}
+
+	wg.Wait()
+	return dbPoints
 }
