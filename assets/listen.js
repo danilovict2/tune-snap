@@ -94,7 +94,12 @@ function sendAudio(audio) {
         .then(songs => {
             slides.innerHTML = '';
             bullets.innerHTML = '';
+            const MAX_RESULTS = 5;
             for (const i in songs) {
+                if (i == MAX_RESULTS) {
+                    break
+                }
+
                 bullets.innerHTML += `
                     <button class="glide__bullet" data-glide-dir="=${i}"></button>
                 `
