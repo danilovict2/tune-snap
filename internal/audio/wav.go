@@ -42,7 +42,7 @@ func convertToWav(inputPath string) error {
 	ext := filepath.Ext(inputPath)
 	outputPath := strings.TrimRight(inputPath, ext) + ".wav"
 
-	tmpPath := filepath.Join(os.Getenv("SONGS_DIR"), "tmp_"+filepath.Base(outputPath))
+	tmpPath := filepath.Join(".", "tmp_"+filepath.Base(outputPath))
 	defer os.Remove(tmpPath)
 
 	comm := exec.Command("ffmpeg", "-y", "-i", inputPath, "-c", "pcm_s16le", "-ar", sampleRate, "-ac", channels, tmpPath)

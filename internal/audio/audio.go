@@ -57,7 +57,7 @@ func SaveTracks(tracks []spotify.Track, songs *mongo.Collection) (saved int) {
 				return
 			}
 
-			wavFile, err := os.Open(filepath.Join(os.Getenv("SONGS_DIR"), match.videoID+".wav"))
+			wavFile, err := os.Open(filepath.Join(".", match.videoID+".wav"))
 			if err != nil {
 				errChan <- err
 				return
@@ -100,7 +100,7 @@ func downloadYoutubeAudio(result searchResult) error {
 	formats := video.Formats.Itag(140)
 
 	fName := result.videoID + ".m4a"
-	file, err := os.CreateTemp(os.Getenv("SONGS_DIR"), fName)
+	file, err := os.CreateTemp("", fName)
 	if err != nil {
 		return err
 	}

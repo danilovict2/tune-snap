@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -18,10 +17,6 @@ import (
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
-	}
-
-	if err := os.Mkdir(os.Getenv("SONGS_DIR"), os.ModePerm); err != nil && !errors.Is(err, os.ErrExist) {
-		log.Fatal(err)
 	}
 
 	uri := os.Getenv("MONGODB_URI")
