@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/danilovict2/shazam-clone/internal/db"
-	"github.com/danilovict2/shazam-clone/templates/home"
+	"github.com/danilovict2/tune-snap/internal/db"
+	"github.com/danilovict2/tune-snap/templates/home"
 	"github.com/labstack/echo/v4"
 )
 

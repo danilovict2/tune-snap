@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/cmplx"
 
-	"github.com/danilovict2/shazam-clone/models"
+	"github.com/danilovict2/tune-snap/models"
 	"github.com/mattetti/audio"
 	"github.com/mattetti/audio/transforms"
 	"github.com/mjibson/go-dsp/fft"

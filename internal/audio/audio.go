@@ -11,9 +11,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/danilovict2/shazam-clone/internal/db"
-	"github.com/danilovict2/shazam-clone/internal/fingerprint"
-	"github.com/danilovict2/shazam-clone/internal/spotify"
+	"github.com/danilovict2/tune-snap/internal/db"
+	"github.com/danilovict2/tune-snap/internal/fingerprint"
+	"github.com/danilovict2/tune-snap/internal/spotify"
 	"github.com/kkdai/youtube/v2"
 	"github.com/raitonoberu/ytsearch"
 	"go.mongodb.org/mongo-driver/v2/mongo"

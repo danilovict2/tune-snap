@@ -1,5 +1,5 @@
 {
-  "name": "shazam",
+  "name": "tune-snap",
   "version": "1.0.0",
   "description": "",
   "private": true,
@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/danilovict2/shazam-clone.git"
+    "url": "git+https://github.com/danilovict2/tune-snap.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/danilovict2/shazam-clone/issues"
+    "url": "https://github.com/danilovict2/tune-snap/issues"
   },
-  "homepage": "https://github.com/danilovict2/shazam-clone#readme",
+  "homepage": "https://github.com/danilovict2/tune-snap#readme",
   "devDependencies": {
     "webpack": "^5.99.8",
     "webpack-cli": "^6.0.1"

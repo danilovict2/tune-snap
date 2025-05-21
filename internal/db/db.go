@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/danilovict2/shazam-clone/models"
+	"github.com/danilovict2/tune-snap/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )

@@ -1,4 +1,5 @@
-module github.com/danilovict2/shazam-clone
+module github.com/danilovict2/tune-snap
+
 
 go 1.24.0
 

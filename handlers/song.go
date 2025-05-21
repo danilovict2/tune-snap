@@ -10,8 +10,8 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/danilovict2/shazam-clone/internal/audio"
-	"github.com/danilovict2/shazam-clone/internal/spotify"
+	"github.com/danilovict2/tune-snap/internal/audio"
+	"github.com/danilovict2/tune-snap/internal/spotify"
 	"github.com/kashifkhan0771/utils/rand"
 	"github.com/labstack/echo/v4"
 	"github.com/tidwall/gjson"

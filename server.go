@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/danilovict2/shazam-clone/handlers"
+	"github.com/danilovict2/tune-snap/handlers"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

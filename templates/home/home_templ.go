@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"fmt"
-	"github.com/danilovict2/shazam-clone/templates"
+	"github.com/danilovict2/tune-snap/templates"
 )
 
 func Hello(songCount int32) templ.Component {

@@ -6,8 +6,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/danilovict2/shazam-clone/internal/db"
-	"github.com/danilovict2/shazam-clone/models"
+	"github.com/danilovict2/tune-snap/internal/db"
+	"github.com/danilovict2/tune-snap/models"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 

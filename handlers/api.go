@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/danilovict2/shazam-clone/internal/audio"
-	"github.com/danilovict2/shazam-clone/internal/fingerprint"
-	"github.com/danilovict2/shazam-clone/internal/shazam"
+	"github.com/danilovict2/tune-snap/internal/audio"
+	"github.com/danilovict2/tune-snap/internal/fingerprint"
+	"github.com/danilovict2/tune-snap/internal/shazam"
 	"github.com/labstack/echo/v4"
 )
 
