@@ -40,9 +40,9 @@ type wavHeader struct {
 
 func convertToWav(inputPath string) error {
 	ext := filepath.Ext(inputPath)
-	outputPath := strings.TrimRight(inputPath, ext) + ".wav"
+	outputPath := strings.TrimSuffix(inputPath, ext) + ".wav"
 
-	tmpPath := filepath.Join(".", "tmp_"+filepath.Base(outputPath))
+	tmpPath := filepath.Join(os.TempDir(), "tmp_"+filepath.Base(outputPath))
 	defer os.Remove(tmpPath)
 
 	comm := exec.Command("ffmpeg", "-y", "-i", inputPath, "-c", "pcm_s16le", "-ar", sampleRate, "-ac", channels, tmpPath)

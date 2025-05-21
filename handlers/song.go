@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -46,7 +47,9 @@ func (cfg *Config) AddSong(c echo.Context) error {
 	}
 
 	saved := audio.SaveTracks(tracks, cfg.MongoClient.Database("shazam").Collection("songs"))
-	return c.String(http.StatusOK, fmt.Sprintf("%d/%d Songs Added", saved, len(tracks)))
+	log.Printf("AddSong: successfully saved %d out of %d songs", saved, len(tracks))
+
+	return c.Redirect(http.StatusSeeOther, "/")
 }
 
 func (cfg *Config) SpotifyAuth(c echo.Context) error {

@@ -57,7 +57,7 @@ func SaveTracks(tracks []spotify.Track, songs *mongo.Collection) (saved int) {
 				return
 			}
 
-			wavFile, err := os.Open(filepath.Join(".", match.videoID+".wav"))
+			wavFile, err := os.Open(filepath.Join(os.TempDir(), match.videoID+".wav"))
 			if err != nil {
 				errChan <- err
 				return
@@ -135,7 +135,7 @@ func downloadYoutubeAudio(result searchResult) error {
 		attempt++
 		isDownloaded = fi.Size() > 0
 	}
-
+	
 	return convertToWav(file.Name())
 }
 
