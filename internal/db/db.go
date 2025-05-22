@@ -47,10 +47,27 @@ func GetSongCount(songs *mongo.Collection) (int32, error) {
 		return 0, err
 	}
 
+	if len(result) != 1 {
+		return 0, nil
+	}
+
 	count, ok := result[0]["song_count"].(int32)
 	if !ok {
 		return 0, fmt.Errorf("unexpected song_count type: %T", result[0]["song_count"])
 	}
 
 	return count, nil
+}
+
+func SetupIndexes(songs *mongo.Collection) error {
+	fpIndex := mongo.IndexModel{
+		Keys: bson.D{{Key: "fingerprint", Value: 1}},
+	}
+
+	songIDIndex := mongo.IndexModel{
+		Keys: bson.D{{Key: "song_id", Value: 1}},
+	}
+
+	_, err := songs.Indexes().CreateMany(context.TODO(), []mongo.IndexModel{fpIndex, songIDIndex})
+	return err
 }

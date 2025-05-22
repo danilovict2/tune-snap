@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/danilovict2/tune-snap/handlers"
+	"github.com/danilovict2/tune-snap/internal/db"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -30,6 +31,8 @@ func main() {
 			panic(err)
 		}
 	}()
+
+	db.SetupIndexes(client.Database("shazam").Collection("songs"))
 
 	config := handlers.Config{MongoClient: client}
 
