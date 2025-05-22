@@ -141,12 +141,12 @@ function changeAudioInput() {
 
     if (audioInput === 'mic') {
         audioInput = 'device';
-        micButton.appendChild(mic);
-        monitorButton.appendChild(monitorOff);
-    } else {
-        audioInput = 'mic';
         micButton.appendChild(micOff);
         monitorButton.appendChild(monitor);
+    } else {
+        audioInput = 'mic';
+        micButton.appendChild(mic);
+        monitorButton.appendChild(monitorOff);
     }
 }
 
