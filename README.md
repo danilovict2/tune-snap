@@ -2,13 +2,15 @@
 
 Tune Snap is a music recognition platform inspired by Shazam’s algorithm. In addition to identifying songs, it integrates Spotify and YouTube APIs to store songs in the library.
 
-<a width="100" href="https://drive.google.com/file/d/19aAHli-5rxUeuvCK7vG2mp-Yw3QKIYLW/view?usp=drive_link">
-<img src="https://drive.google.com/file/d/1OQFSVYB7jFFV2xmWHMpAMm6GhCgRyle8/view?usp=drive_link"/>
+<p align="center">
+  <a href="https://drive.google.com/file/d/19aAHli-5rxUeuvCK7vG2mp-Yw3QKIYLW/view" target="_blank">
+  <img src="https://github.com/danilovict2/tune-snap/blob/115be3815570c48d319f90c45e40b5722865751e/public/img/homepage.png" 
+       alt="screenshot" 
+       width="100%">
 </a>
+</p>
 
-<a align="center" href="https://drive.google.com/file/d/19aAHli-5rxUeuvCK7vG2mp-Yw3QKIYLW/view?usp=drive_link">
-Demo
-</a>
+<p align="center"><a href="https://drive.google.com/file/d/19aAHli-5rxUeuvCK7vG2mp-Yw3QKIYLW/view" target="_blank">Demo</a></p>
 
 ## 🚀 Quick Start
 
