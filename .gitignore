@@ -3,3 +3,4 @@ songs
 node_modules
 public/build.js
 public/1.build.js
+bin/*
