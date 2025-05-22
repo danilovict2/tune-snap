@@ -20,6 +20,7 @@ import (
 const (
 	spotifyUserAuthorizationEndpoint = "https://accounts.spotify.com/authorize?"
 	spotifyTokenEndpoint             = "https://accounts.spotify.com/api/token"
+	spotifyRedirectURI               = "http://127.0.0.1:8000/api/spotify_auth"
 )
 
 func (cfg *Config) AddSong(c echo.Context) error {
@@ -36,7 +37,7 @@ func (cfg *Config) AddSong(c echo.Context) error {
 				"response_type": {"code"},
 				"client_id":     {os.Getenv("SPOTIFY_CLIENT_ID")},
 				"scope":         {"playlist-read-private playlist-read-collaborative"},
-				"redirect_uri":  {os.Getenv("SPOTIFY_REDIRECT_URI")},
+				"redirect_uri":  {spotifyRedirectURI},
 				"state":         {state},
 			}
 
@@ -63,7 +64,7 @@ func (cfg *Config) SpotifyAuth(c echo.Context) error {
 
 	data := url.Values{}
 	data.Set("code", code)
-	data.Set("redirect_uri", os.Getenv("HOME_URI"))
+	data.Set("redirect_uri", spotifyRedirectURI)
 	data.Set("grant_type", "authorization_code")
 
 	req, err := http.NewRequest("POST", spotifyTokenEndpoint, bytes.NewBufferString(data.Encode()))
